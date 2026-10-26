@@ -29,6 +29,5 @@ jobs:
           CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
           TIMEZONE: America/New_York
           GAME: maptap
-          # Scheduled runs have no inputs, so these resolve to "0" and the bot posts normally
           DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
           PRINT_RAW: ${{ inputs.print_raw && '1' || '0' }}
