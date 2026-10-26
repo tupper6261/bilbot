@@ -1,13 +1,15 @@
 """
-MapTap daily leaderboard bot.
+Daily game leaderboard bot (MapTap, Krillion).
 
 Runs once, reads yesterday's messages from a Discord channel, pulls out
-MapTap "Final score: NNN" lines, posts a leaderboard, and exits.
+scores for the chosen game, posts a leaderboard, and exits.
 No always-on process needed, so it's perfect for a scheduled GitHub Action.
 
 Env flags:
-  DRY_RUN=1    print the leaderboard but don't post it
-  PRINT_RAW=1  also print every message read (author + content) for debugging
+  GAME=maptap|krillion   which game to score (default maptap)
+  LOWER_IS_BETTER=1      rank lowest score first (default: highest first)
+  DRY_RUN=1              print the leaderboard but don't post it
+  PRINT_RAW=1            also print every message read (author + content)
 """
 import os
 import re
@@ -25,7 +27,23 @@ API = "https://discord.com/api/v10"
 HEADERS = {"Authorization": f"Bot {TOKEN}", "Content-Type": "application/json"}
 DISCORD_EPOCH_MS = 1420070400000
 
-SCORE_RE = re.compile(r"final\s*score\s*:?\s*(\d{1,4})", re.IGNORECASE)
+GAMES = {
+    # "Final score: 812"
+    "maptap": {
+        "name": "MapTap",
+        "emoji": "🗺️",
+        "regex": r"final\s*score\s*:?\s*(\d{1,4})",
+    },
+    # "Krillion #103\n315"  (puzzle number, then the score on the next line)
+    "krillion": {
+        "name": "Krillion",
+        "emoji": "🦐",
+        "regex": r"krillion\s*#\s*\d+\s+(\d[\d,]*)",
+    },
+}
+GAME = GAMES[os.environ.get("GAME", "maptap").lower()]
+SCORE_RE = re.compile(GAME["regex"], re.IGNORECASE)
+LOWER_IS_BETTER = os.environ.get("LOWER_IS_BETTER") == "1"
 MEDALS = ["🥇", "🥈", "🥉"]
 
 
@@ -91,12 +109,12 @@ def build_leaderboard(messages):
         if uid in scores:
             continue
         # Renders as a clickable @mention; allowed_mentions in post() keeps it from pinging
-        scores[uid] = (f"<@{uid}>", int(match.group(1)))
-    return sorted(scores.values(), key=lambda x: x[1], reverse=True)
+        scores[uid] = (f"<@{uid}>", int(match.group(1).replace(",", "")))
+    return sorted(scores.values(), key=lambda x: x[1], reverse=not LOWER_IS_BETTER)
 
 
 def format_post(day: datetime, board):
-    header = f"🗺️ **MapTap Leaderboard — {day:%A, %B %-d}**\n"
+    header = f"{GAME['emoji']} **{GAME['name']} Leaderboard — {day:%A, %B %-d}**\n"
     if not board:
         return header + "No scores posted yesterday. 😢"
     lines, prev_score, rank = [], None, 0
