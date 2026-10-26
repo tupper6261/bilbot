@@ -1,0 +1,33 @@
+name: Daily MapTap Leaderboard
+
+on:
+  schedule:
+    - cron: "0 10 * * *"   # 13:00 UTC = 9am ET (8am during standard time)
+  workflow_dispatch:        # adds a "Run workflow" button for manual testing
+    inputs:
+      dry_run:
+        description: "Print only, don't post"
+        type: boolean
+        default: true
+      print_raw:
+        description: "Print every raw message (debug)"
+        type: boolean
+        default: false
+
+jobs:
+  leaderboard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - run: python bot.py
+        env:
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+          CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+          TIMEZONE: America/New_York
+          # Scheduled runs have no inputs, so these resolve to "0" and the bot posts normally
+          DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
+          PRINT_RAW: ${{ inputs.print_raw && '1' || '0' }}
