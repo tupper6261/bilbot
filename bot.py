@@ -34,11 +34,11 @@ GAMES = {
         "emoji": "🗺️",
         "regex": r"final\s*score\s*:?\s*(\d{1,4})",
     },
-    # "Krillion #103\n315"  (puzzle number, then the score on the next line)
+    # "Krillion #102 🦐\n295"  (puzzle number + anything but digits, then the score on the next line)
     "krillion": {
         "name": "Krillion",
         "emoji": "🦐",
-        "regex": r"krillion\s*#\s*\d+\s+(\d[\d,]*)",
+        "regex": r"krillion\s*#\s*\d+[^\d\n]*\n\s*(\d[\d,]*)",
     },
 }
 GAME = GAMES[os.environ.get("GAME", "maptap").lower()]
