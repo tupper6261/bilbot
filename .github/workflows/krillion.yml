@@ -2,7 +2,7 @@ name: Daily Krillion Leaderboard
 
 on:
   schedule:
-    - cron: "2 11 * * *"   # 14:00 UTC = 10am ET (9am during standard time).
+    - cron: "2 8 * * *"   # 14:00 UTC = 10am ET (9am during standard time).
   workflow_dispatch:        # adds a "Run workflow" button for manual testing
     inputs:
       dry_run:
