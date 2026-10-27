@@ -2,7 +2,7 @@ name: Daily MapTap Leaderboard
 
 on:
   schedule:
-    - cron: "1 11 * * *"   # 13:00 UTC = 9am ET (8am during standard time)
+    - cron: "1 8 * * *"   # 13:00 UTC = 9am ET (8am during standard time)
   workflow_dispatch:        # adds a "Run workflow" button for manual testing
     inputs:
       dry_run:
